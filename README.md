@@ -53,5 +53,3 @@ python3 report_generator.py --output-dir output --environment LLE --max-hosts 5
 - The generator reads the existing copied host files from /inventory and writes the report inside this working directory.
 - It does not modify scripts or files outside this directory.
 - The HTML report is intended for management presentation and can be shared as-is.
-=======
-# rhel_patch_reports
