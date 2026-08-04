@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # LLE Patch Report Solution
 
 This directory contains a self-contained report generator for LLE patch reporting.
@@ -53,3 +54,7 @@ python3 report_generator.py --output-dir output --environment LLE --max-hosts 5
 - The generator reads the existing copied host files from /inventory and writes the report inside this working directory.
 - It does not modify scripts or files outside this directory.
 - The HTML report is intended for management presentation and can be shared as-is.
+=======
+# rhel_patch_reports
+New RHEL patch reports
+>>>>>>> 6d4847d60fbb5735446c4d7f9f6111c3b743876a
