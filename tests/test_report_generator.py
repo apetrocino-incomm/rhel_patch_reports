@@ -5,10 +5,76 @@ from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from report_generator import parse_inventory_file, build_html_report, parse_collected_host_file, filter_hosts_for_environment, summarize_reboot_counts, build_reboot_inventory
+from report_generator import ANSIBLE_INVENTORY_DIR, DEFAULT_INVENTORY_DIR, DEFAULT_INVENTORY_FILES, collect_host_data, discover_hosts, find_collected_host_file, hostname_prefix, parse_inventory_file, build_html_report, parse_collected_host_file, filter_hosts_for_environment, summarize_reboot_counts, build_reboot_inventory
 
 
 class ReportGeneratorTests(unittest.TestCase):
+    def test_hostname_prefix_ignores_fqdn(self):
+        self.assertEqual(hostname_prefix("dplepl01v.uss.net"), "dplepl01v")
+        self.assertEqual(hostname_prefix("dplepl01v"), "dplepl01v")
+
+    def test_find_collected_host_file_matches_short_inventory_name(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            inventory_dir = Path(tmpdir)
+            collected_file = inventory_dir / "aplolsk8ctl02rd"
+            collected_file.write_text("aplolsk8ctl02rd,10.83.161.221,2026-08-25,2026-07-21,2026-09-07,Red Hat Enterprise Linux release 8.10,4.18.0,Reboot is required to fully utilize these updates.", encoding="utf-8")
+
+            self.assertEqual(find_collected_host_file("aplolsk8ctl02rd.incommrde.com", inventory_dir), collected_file)
+
+    def test_collect_host_data_preserves_ansible_name_when_short_file_matches(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            inventory_dir = Path(tmpdir)
+            (inventory_dir / "dplepl01v").write_text("dplepl01v,10.190.4.127,2026-08-25,2026-05-26,2026-09-07,Red Hat Enterprise Linux release 8.10,4.18.0,Reboot is required to fully utilize these updates.", encoding="utf-8")
+
+            parsed = collect_host_data(
+                {"hostname": "dplepl01v.uss.net", "ip": "10.190.4.127", "source": "QTS_RHEL_PRD.ini"},
+                inventory_dir,
+            )
+
+            self.assertEqual(parsed["hostname"], "dplepl01v.uss.net")
+            self.assertEqual(parsed["collected_hostname"], "dplepl01v")
+            self.assertEqual(parsed["patch_status"], "Assessed")
+
+    def test_discover_hosts_removes_duplicate_fqdn_prefixes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            first = Path(tmpdir) / "OLS_ATL_PRD.ini"
+            second = Path(tmpdir) / "OLS_ATL_PRD_EVN.ini"
+            first.write_text("aplolsk8ctl02rd.incommrde.com ansible_host=10.83.161.221\n", encoding="utf-8")
+            second.write_text("aplolsk8ctl02rd.incommrde.com ansible_host=10.83.161.221\n", encoding="utf-8")
+
+            hosts = discover_hosts([str(first), str(second)])
+
+            self.assertEqual(len(hosts), 1)
+
+    def test_inventory_sources_use_git_inventory_and_inventory_comparison_dir(self):
+        expected_files = {
+            "Azure_LWR.ini",
+            "OLS_ATL_LWR.ini",
+            "OLS_QTS_LWR.ini",
+            "QTS_CENTOS_LWR.ini",
+            "QTS_LWR_IPA.ini",
+            "QTS_OEL_LWR.ini",
+            "QTS_RHEL_LWR.ini",
+            "Azure_PRD.ini",
+            "OLS_ATL_PRD_EVN.ini",
+            "OLS_ATL_PRD.ini",
+            "OLS_ATL_PRD_ODD.ini",
+            "OLS_QTS_PRD_EVN.ini",
+            "OLS_QTS_PRD.ini",
+            "OLS_QTS_PRD_ODD.ini",
+            "QTS_CENTOS_PRD.ini",
+            "QTS_OEL_PRD.ini",
+            "QTS_PRD_IPA.ini",
+            "QTS_RHEL_PRD.ini",
+            "GRATISCARD.ini",
+            "DATAWAVE.ini",
+        }
+
+        self.assertEqual(ANSIBLE_INVENTORY_DIR, Path("/git_incomm/incomm_git_inventory"))
+        self.assertEqual(DEFAULT_INVENTORY_DIR, Path("/inventory"))
+        self.assertEqual({Path(path).name for path in DEFAULT_INVENTORY_FILES}, expected_files)
+        self.assertTrue(all(Path(path).parent == ANSIBLE_INVENTORY_DIR for path in DEFAULT_INVENTORY_FILES))
+
     def test_parse_inventory_file_collects_hosts(self):
         fixture = Path(__file__).parent / "fixtures" / "sample_inventory.ini"
         hosts = parse_inventory_file(fixture)

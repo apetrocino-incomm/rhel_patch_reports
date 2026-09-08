@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FCV DMZ Patch Status Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; color: #1f2937; }
+    .report-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px; }
+    .report-header h1 { margin: 0; font-size: 28px; color: #0f172a; }
+    .report-header img { max-height: 48px; object-fit: contain; }
+    h2 { color: #0f172a; }
+    .meta { color: #475569; margin-bottom: 18px; }
+    .summary { background: #f8fafc; padding: 12px; border-left: 4px solid #2563eb; margin-bottom: 20px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 8px; }
+    .summary-card { background: white; border: 1px solid #dbeafe; padding: 8px 10px; border-radius: 6px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; font-size: 12px; }
+    th { background: #e2e8f0; cursor: pointer; }
+    th:hover { background: #dbeafe; }
+    .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #cbd5e1; color: #475569; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="report-header">
+    <h1>FCV DMZ Patch Status Report</h1>
+    <img src="https://www.incomm.com/wp-content/uploads/2022/04/incomm_payments_logo_hrz.png__1200x372_q85_subsampling-2-2.png" alt="InComm Payments logo">
+  </div>
+  <div class="meta">Generated: 2026-08-20 15:14:20</div>
+  <div class="summary">
+    <strong>Summary:</strong> 0 assessed server entries and 31 issue entries.
+    <div class="summary-grid">
+      <div class="summary-card"><strong>Reboot should not be necessary:</strong> 0</div>
+      <div class="summary-card"><strong>Reboot is probably not necessary:</strong> 0</div>
+      <div class="summary-card"><strong>Reboot is required to fully utilize these updates:</strong> 0</div>
+      
+    </div>
+  </div>
+
+  <h2>Primary Report</h2>
+  <table id="primary-report">
+    <thead>
+      <tr>
+        <th data-sort="hostname">Hostname</th>
+        <th data-sort="ip">IP Address</th>
+        <th data-sort="patch_date">Patch Date</th>
+        <th data-sort="last_reboot">Last Reboot Date</th>
+        <th data-sort="os_release">OS Release</th>
+        <th data-sort="patch_status">Patch Status</th>
+        <th data-sort="notes">Notes</th>
+        <th data-sort="source">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="8">No data available.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Secondary Report - Issues</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Hostname</th>
+        <th>IP Address</th>
+        <th>Issue</th>
+        <th>Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>adlolsk8ctl01id.incommide.com</td><td>10.86.121.200</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsk8ctl02id.incommide.com</td><td>10.86.121.201</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsk8ctl03id.incommide.com</td><td>10.86.121.202</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsk8wrk01id.incommide.com</td><td>10.86.121.203</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsk8wrk02id.incommide.com</td><td>10.86.121.204</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsk8wrk03id.incommide.com</td><td>10.86.121.205</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsweb20iz.incommidedmz.com</td><td>10.86.124.31</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>adlolsweb23iz.incommidedmz.com</td><td>10.86.124.41</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>allolsk8ctl01id.incommide.com</td><td>10.86.121.180</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>allolsk8ctl02id.incommide.com</td><td>10.86.121.181</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>allolsk8ctl03id.incommide.com</td><td>10.86.121.182</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>allolsk8wrk01id.incommide.com</td><td>10.86.121.183</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>allolsk8wrk02id.incommide.com</td><td>10.86.121.184</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>allolsk8wrk03id.incommide.com</td><td>10.86.121.185</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8ctl01id.incommide.com</td><td>10.86.121.220</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8ctl02id.incommide.com</td><td>10.86.121.221</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8ctl03id.incommide.com</td><td>10.86.121.222</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk01id.incommide.com</td><td>10.86.121.223</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk02id.incommide.com</td><td>10.86.121.224</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk03id.incommide.com</td><td>10.86.121.225</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk04id.incommide.com</td><td>10.86.121.226</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk05id.incommide.com</td><td>10.86.121.227</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk06id.incommide.com</td><td>10.86.121.228</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsk8wrk07id.incommide.com</td><td>10.86.121.229</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb09iz.incommidedmz.com</td><td>10.86.124.25</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb10iz.incommidedmz.com</td><td>10.86.124.26</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb11iz.incommidedmz.com</td><td>10.86.124.27</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb21iz.incommidedmz.com</td><td>10.86.124.32</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb22iz.incommidedmz.com</td><td>10.86.124.33</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb24iz.incommidedmz.com</td><td>10.86.124.42</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr><tr><td>aulolsweb25iz.incommidedmz.com</td><td>10.86.124.43</td><td>No copied host data found in /inventory</td><td>OLS_ATL_LWR.ini</td></tr>
+    </tbody>
+  </table>
+  <script>
+    const table = document.getElementById('primary-report');
+    if (table) {
+      const headers = table.querySelectorAll('th[data-sort]');
+      headers.forEach((header) => {
+        header.addEventListener('click', () => {
+          const tbody = table.querySelector('tbody');
+          const rows = Array.from(tbody.querySelectorAll('tr'));
+          const key = header.getAttribute('data-sort');
+          const ascending = header.dataset.order !== 'asc';
+          header.dataset.order = ascending ? 'asc' : 'desc';
+          rows.sort((a, b) => {
+            const aText = a.cells[Array.from(headers).indexOf(header)].textContent.trim().toLowerCase();
+            const bText = b.cells[Array.from(headers).indexOf(header)].textContent.trim().toLowerCase();
+            return aText.localeCompare(bText) * (ascending ? 1 : -1);
+          });
+          rows.forEach((row) => tbody.appendChild(row));
+        });
+      });
+    }
+  </script>
+  <div class="footer">This report was generated by an automation created by Unix team. Report any mismatch to apetrocino@incomm.com</div>
+</body>
+</html>

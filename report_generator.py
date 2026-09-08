@@ -13,11 +13,31 @@ from typing import List, Dict, Optional, Tuple
 
 
 WORKDIR = Path(__file__).resolve().parent
+ANSIBLE_INVENTORY_DIR = Path("/git_incomm/incomm_git_inventory")
 DEFAULT_INVENTORY_FILES = [
-    "/backup/patching/monthly/LWR/QTS_RHEL_LWR.ini",
-    "/backup/patching/monthly/LWR/OLS_ATL_LWR.ini",
-    "/backup/patching/monthly/LWR/OLS_QTS_LWR.ini",
-    "/backup/patching/monthly/LWR/QTS_OEL_LWR.ini",
+    str(ANSIBLE_INVENTORY_DIR / filename)
+    for filename in [
+        "Azure_LWR.ini",
+        "OLS_ATL_LWR.ini",
+        "OLS_QTS_LWR.ini",
+        "QTS_CENTOS_LWR.ini",
+        "QTS_LWR_IPA.ini",
+        "QTS_OEL_LWR.ini",
+        "QTS_RHEL_LWR.ini",
+        "Azure_PRD.ini",
+        "OLS_ATL_PRD_EVN.ini",
+        "OLS_ATL_PRD.ini",
+        "OLS_ATL_PRD_ODD.ini",
+        "OLS_QTS_PRD_EVN.ini",
+        "OLS_QTS_PRD.ini",
+        "OLS_QTS_PRD_ODD.ini",
+        "QTS_CENTOS_PRD.ini",
+        "QTS_OEL_PRD.ini",
+        "QTS_PRD_IPA.ini",
+        "QTS_RHEL_PRD.ini",
+        "GRATISCARD.ini",
+        "DATAWAVE.ini",
+    ]
 ]
 DEFAULT_INVENTORY_DIR = Path("/inventory")
 
@@ -67,6 +87,10 @@ def parse_inventory_file(path: Path) -> List[Dict[str, str]]:
     return hosts
 
 
+def hostname_prefix(hostname: str) -> str:
+    return hostname.strip().split(".", 1)[0].lower()
+
+
 def discover_host_files(inventory_dir: Optional[Path] = None) -> List[Path]:
     base_dir = inventory_dir or DEFAULT_INVENTORY_DIR
     if not base_dir.exists():
@@ -77,10 +101,16 @@ def discover_host_files(inventory_dir: Optional[Path] = None) -> List[Path]:
 def discover_hosts(inventory_files: Optional[List[str]] = None) -> List[Dict[str, str]]:
     files = inventory_files or DEFAULT_INVENTORY_FILES
     hosts: List[Dict[str, str]] = []
+    seen_prefixes = set()
     for path_str in files:
         path = Path(path_str)
         if path.exists():
-            hosts.extend(parse_inventory_file(path))
+            for host in parse_inventory_file(path):
+                prefix = hostname_prefix(host.get("hostname", ""))
+                if prefix in seen_prefixes:
+                    continue
+                seen_prefixes.add(prefix)
+                hosts.append(host)
     return hosts
 
 
@@ -156,7 +186,20 @@ def parse_collected_host_file(path: Path) -> Optional[Dict[str, str]]:
     }
 
 
-def collect_host_data(host: Dict[str, str]) -> Dict[str, str]:
+def find_collected_host_file(hostname: str, inventory_dir: Optional[Path] = None) -> Optional[Path]:
+    base_dir = inventory_dir or DEFAULT_INVENTORY_DIR
+    exact_path = base_dir / hostname
+    if exact_path.is_file():
+        return exact_path
+
+    prefix = hostname_prefix(hostname)
+    for candidate in discover_host_files(base_dir):
+        if hostname_prefix(candidate.name) == prefix:
+            return candidate
+    return None
+
+
+def collect_host_data(host: Dict[str, str], inventory_dir: Optional[Path] = None) -> Dict[str, str]:
     hostname = host["hostname"]
     ip = host.get("ip", "") or "Unknown"
 
@@ -167,16 +210,18 @@ def collect_host_data(host: Dict[str, str]) -> Dict[str, str]:
         "last_reboot": "Not found",
         "os_release": "Not found",
         "patch_status": "Not assessed",
-        "notes": "No copied host data found in /inventory",
+        "notes": f"No copied host data found in {inventory_dir or DEFAULT_INVENTORY_DIR}",
         "source": host.get("source", "inventory"),
     }
 
-    host_file = DEFAULT_INVENTORY_DIR / hostname
-    if not host_file.exists():
-        host_file = DEFAULT_INVENTORY_DIR / host.get("hostname", "")
-    parsed = parse_collected_host_file(host_file) if host_file.exists() else None
+    host_file = find_collected_host_file(hostname, inventory_dir)
+    parsed = parse_collected_host_file(host_file) if host_file else None
     if parsed:
+        parsed_hostname = parsed.get("hostname", "")
         result.update(parsed)
+        result["hostname"] = hostname
+        result["ip"] = ip if ip != "Unknown" else parsed.get("ip", "")
+        result["collected_hostname"] = parsed_hostname
         result["patch_status"] = "Assessed"
         result["notes"] = parsed.get("notes", "")
         return result

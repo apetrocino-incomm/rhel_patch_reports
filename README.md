@@ -4,8 +4,10 @@ This directory contains a self-contained report generator for LLE patch reportin
 
 ## What it does
 
-- Reads the LLE host inventory definitions from the LWR patching sources.
+- Reads the Ansible inventory definitions from `/git_incomm/incomm_git_inventory`, including the LWR and PROD inventory files.
 - Reads the already-copied host data files from /inventory, which contain the patching details collected from each server.
+- Matches inventory hosts to `/inventory` files by hostname prefix: it checks the exact filename first, then the hostname before the first dot. For example, `host.example.com` matches either `/inventory/host.example.com` or `/inventory/host`.
+- Removes duplicate Ansible entries that have the same hostname prefix, even when they appear in multiple inventory files.
 - Builds a professional HTML report with:
   - a clear header
   - a primary patch-status table
@@ -20,7 +22,7 @@ This directory contains a self-contained report generator for LLE patch reportin
 
 ## Run locally
 
-Run the report from the existing /inventory files for LLE (default):
+Run the report using the Ansible inventories from `/git_incomm/incomm_git_inventory` and compare each host against its copied data file in `/inventory` for LLE (default):
 
 ```bash
 cd /home/CALLING/apetrocino.aa/projects/new_patch_reports
@@ -50,6 +52,8 @@ python3 report_generator.py --output-dir output --environment LLE --max-hosts 5
 
 ## Notes
 
-- The generator reads the existing copied host files from /inventory and writes the report inside this working directory.
+- The generator reads Ansible inventory files only from `/git_incomm/incomm_git_inventory`.
+- The copied host files in `/inventory` remain the comparison source for patching details.
+- Hosts present in Ansible inventory but missing from `/inventory` are listed in the issues table for review, such as possible decommissioned machines.
 - It does not modify scripts or files outside this directory.
 - The HTML report is intended for management presentation and can be shared as-is.
