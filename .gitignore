@@ -1,2 +1,7 @@
-__pycache__
-tests/__pycache__
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Optional
+*.pyo
+*.pyd
