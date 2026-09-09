@@ -5,7 +5,7 @@ from pathlib import Path
 import sys
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from report_generator import ANSIBLE_INVENTORY_DIR, DEFAULT_INVENTORY_DIR, DEFAULT_INVENTORY_FILES, collect_host_data, discover_hosts, find_collected_host_file, hostname_prefix, parse_inventory_file, build_html_report, parse_collected_host_file, filter_hosts_for_environment, summarize_reboot_counts, build_reboot_inventory
+from report_generator import ANSIBLE_INVENTORY_DIR, DEFAULT_INVENTORY_DIR, DEFAULT_INVENTORY_FILES, build_issues_csv, collect_host_data, discover_hosts, find_collected_host_file, hostname_prefix, parse_inventory_file, build_html_report, parse_collected_host_file, filter_hosts_for_environment, summarize_reboot_counts, build_reboot_inventory
 
 
 class ReportGeneratorTests(unittest.TestCase):
@@ -158,6 +158,24 @@ class ReportGeneratorTests(unittest.TestCase):
         self.assertIn("host1.example.com ansible_host=10.44.0.10", inventory)
         self.assertNotIn("host2.example.com", inventory)
 
+    def test_build_issues_csv_contains_expected_columns_and_values(self):
+        issues = [
+            {
+                "hostname": "host1.example.com",
+                "ip": "10.44.0.10",
+                "issue": "No copied host data found",
+                "source": "QTS_RHEL_PRD.ini",
+            }
+        ]
+
+        content = build_issues_csv(issues)
+
+        self.assertEqual(
+            content,
+            "Hostname,IP Address,Issue,Source\r\n"
+            "host1.example.com,10.44.0.10,No copied host data found,QTS_RHEL_PRD.ini\r\n",
+        )
+
     def test_build_html_report_contains_sections(self):
         rows = [
             {
@@ -208,6 +226,27 @@ class ReportGeneratorTests(unittest.TestCase):
         self.assertIn("download=\"LLE_to_reboot.ini\"", report)
         self.assertIn("data:text/plain;charset=utf-8,host01.example.com%20ansible_host%3D10.44.0.1%0A", report)
         self.assertIn("Download reboot inventory (1 host): LLE_to_reboot.ini", report)
+
+    def test_build_html_report_includes_issues_csv_and_sortable_secondary_table(self):
+        issues = [
+            {
+                "hostname": "host01.example.com",
+                "ip": "10.44.0.1",
+                "issue": "Missing inventory data",
+                "source": "QTS_RHEL_PRD.ini",
+            }
+        ]
+        report = build_html_report(
+            [],
+            issues,
+            issues_csv_filename="LLE_issues.csv",
+            issues_csv_content=build_issues_csv(issues),
+        )
+        self.assertIn('download="LLE_issues.csv"', report)
+        self.assertIn("Download issues CSV (1 host): LLE_issues.csv", report)
+        self.assertIn('id="issues-report"', report)
+        self.assertIn('th data-sort="issue"', report)
+        self.assertIn("['primary-report', 'issues-report']", report)
 
     def test_build_html_report_includes_logo_and_footer(self):
         rows = []

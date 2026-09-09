@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import html
+import io
 import re
 import urllib.parse
 from datetime import datetime
@@ -258,7 +260,29 @@ def build_reboot_inventory(rows: List[Dict[str, str]]) -> str:
     return "\n".join(lines) + ("\n" if lines else "")
 
 
-def build_html_report(rows: List[Dict[str, str]], issues: List[Dict[str, str]], title: str = "LLE Patch Status Report", reboot_inventory_filename: Optional[str] = None, reboot_inventory_content: Optional[str] = None) -> str:
+def build_issues_csv(issues: List[Dict[str, str]]) -> str:
+    output = io.StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow(["Hostname", "IP Address", "Issue", "Source"])
+    for issue in issues:
+        writer.writerow([
+            issue.get("hostname", ""),
+            issue.get("ip", ""),
+            issue.get("issue", ""),
+            issue.get("source", ""),
+        ])
+    return output.getvalue()
+
+
+def build_html_report(
+    rows: List[Dict[str, str]],
+    issues: List[Dict[str, str]],
+    title: str = "LLE Patch Status Report",
+    reboot_inventory_filename: Optional[str] = None,
+    reboot_inventory_content: Optional[str] = None,
+    issues_csv_filename: Optional[str] = None,
+    issues_csv_content: Optional[str] = None,
+) -> str:
     rows_html = []
     for row in rows:
         rows_html.append(
@@ -296,6 +320,15 @@ def build_html_report(rows: List[Dict[str, str]], issues: List[Dict[str, str]], 
             f"Download reboot inventory ({reboot_count} host{'s' if reboot_count != 1 else ''}): {html.escape(reboot_inventory_filename)}"
             f"</a></div>"
         )
+    issues_download_link = ""
+    if issues_csv_filename and issues_csv_content:
+        href = f"data:text/csv;charset=utf-8,{urllib.parse.quote(issues_csv_content, safe='')}"
+        issues_download_link = (
+            f"<div class=\"summary-card\" style=\"grid-column: span 3; text-align: center;\">"
+            f"<a href=\"{href}\" download=\"{html.escape(issues_csv_filename)}\" style=\"text-decoration:none;color:#1d4ed8;font-weight:600;\">"
+            f"Download issues CSV ({len(issues)} host{'s' if len(issues) != 1 else ''}): {html.escape(issues_csv_filename)}"
+            f"</a></div>"
+        )
     return f"""<!DOCTYPE html>
 <html lang=\"en\">
 <head>
@@ -319,75 +352,77 @@ def build_html_report(rows: List[Dict[str, str]], issues: List[Dict[str, str]], 
   </style>
 </head>
 <body>
-  <div class="report-header">
-    <h1>{title}</h1>
-    <img src="https://www.incomm.com/wp-content/uploads/2022/04/incomm_payments_logo_hrz.png__1200x372_q85_subsampling-2-2.png" alt="InComm Payments logo">
-  </div>
-  <div class=\"meta\">Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>
-  <div class=\"summary\">
-    <strong>Summary:</strong> {len(rows)} assessed server entries and {len(issues)} issue entries.
-    <div class=\"summary-grid\">
-      <div class=\"summary-card\"><strong>Reboot should not be necessary:</strong> {counts['Reboot should not be necessary']}</div>
-      <div class=\"summary-card\"><strong>Reboot is probably not necessary:</strong> {counts['Reboot is probably not necessary']}</div>
-      <div class=\"summary-card\"><strong>Reboot is required to fully utilize these updates:</strong> {counts['Reboot is required to fully utilize these updates']}</div>
-      {download_link}
+    <div class="report-header">
+        <h1>{title}</h1>
+        <img src="https://www.incomm.com/wp-content/uploads/2022/04/incomm_payments_logo_hrz.png__1200x372_q85_subsampling-2-2.png" alt="InComm Payments logo">
     </div>
-  </div>
+    <div class="meta">Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</div>
+    <div class="summary">
+        <strong>Summary:</strong> {len(rows)} assessed server entries and {len(issues)} issue entries.
+        <div class="summary-grid">
+            <div class="summary-card"><strong>Reboot should not be necessary:</strong> {counts['Reboot should not be necessary']}</div>
+            <div class="summary-card"><strong>Reboot is probably not necessary:</strong> {counts['Reboot is probably not necessary']}</div>
+            <div class="summary-card"><strong>Reboot is required to fully utilize these updates:</strong> {counts['Reboot is required to fully utilize these updates']}</div>
+            {download_link}
+            {issues_download_link}
+        </div>
+    </div>
 
-  <h2>Primary Report</h2>
-  <table id=\"primary-report\">
-    <thead>
-      <tr>
-        <th data-sort=\"hostname\">Hostname</th>
-        <th data-sort=\"ip\">IP Address</th>
-        <th data-sort=\"patch_date\">Patch Date</th>
-        <th data-sort=\"last_reboot\">Last Reboot Date</th>
-        <th data-sort=\"os_release\">OS Release</th>
-        <th data-sort=\"patch_status\">Patch Status</th>
-        <th data-sort=\"notes\">Notes</th>
-        <th data-sort=\"source\">Source</th>
-      </tr>
-    </thead>
-    <tbody>
-      {''.join(rows_html) if rows_html else '<tr><td colspan="8">No data available.</td></tr>'}
-    </tbody>
-  </table>
+    <h2>Primary Report</h2>
+    <table id="primary-report">
+        <thead>
+            <tr>
+                <th data-sort="hostname">Hostname</th>
+                <th data-sort="ip">IP Address</th>
+                <th data-sort="patch_date">Patch Date</th>
+                <th data-sort="last_reboot">Last Reboot Date</th>
+                <th data-sort="os_release">OS Release</th>
+                <th data-sort="patch_status">Patch Status</th>
+                <th data-sort="notes">Notes</th>
+                <th data-sort="source">Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            {''.join(rows_html) if rows_html else '<tr><td colspan="8">No data available.</td></tr>'}
+        </tbody>
+    </table>
 
-  <h2>Secondary Report - Issues</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Hostname</th>
-        <th>IP Address</th>
-        <th>Issue</th>
-        <th>Source</th>
-      </tr>
-    </thead>
-    <tbody>
-      {''.join(issues_html) if issues_html else '<tr><td colspan="4">No issues recorded.</td></tr>'}
-    </tbody>
-  </table>
-  <script>
-    const table = document.getElementById('primary-report');
-    if (table) {{
-      const headers = table.querySelectorAll('th[data-sort]');
-      headers.forEach((header) => {{
-        header.addEventListener('click', () => {{
-          const tbody = table.querySelector('tbody');
-          const rows = Array.from(tbody.querySelectorAll('tr'));
-          const key = header.getAttribute('data-sort');
-          const ascending = header.dataset.order !== 'asc';
-          header.dataset.order = ascending ? 'asc' : 'desc';
-          rows.sort((a, b) => {{
-            const aText = a.cells[Array.from(headers).indexOf(header)].textContent.trim().toLowerCase();
-            const bText = b.cells[Array.from(headers).indexOf(header)].textContent.trim().toLowerCase();
-            return aText.localeCompare(bText) * (ascending ? 1 : -1);
-          }});
-          rows.forEach((row) => tbody.appendChild(row));
+    <h2>Secondary Report - Issues</h2>
+    <table id="issues-report">
+        <thead>
+            <tr>
+                <th data-sort="hostname">Hostname</th>
+                <th data-sort="ip">IP Address</th>
+                <th data-sort="issue">Issue</th>
+                <th data-sort="source">Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            {''.join(issues_html) if issues_html else '<tr><td colspan="4">No issues recorded.</td></tr>'}
+        </tbody>
+    </table>
+    <script>
+        ['primary-report', 'issues-report'].forEach((tableId) => {{
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const headers = table.querySelectorAll('th[data-sort]');
+            headers.forEach((header) => {{
+                header.addEventListener('click', () => {{
+                    const tbody = table.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const columnIndex = Array.from(headers).indexOf(header);
+                    const ascending = header.dataset.order !== 'asc';
+                    header.dataset.order = ascending ? 'asc' : 'desc';
+                    rows.sort((a, b) => {{
+                        const aText = a.cells[columnIndex].textContent.trim().toLowerCase();
+                        const bText = b.cells[columnIndex].textContent.trim().toLowerCase();
+                        return aText.localeCompare(bText) * (ascending ? 1 : -1);
+                    }});
+                    rows.forEach((row) => tbody.appendChild(row));
+                }});
+            }});
         }});
-      }});
-    }}
-  </script>
+    </script>
   <div class="footer">This report was generated by an automation created by Unix team. Report any mismatch to apetrocino@incomm.com</div>
 </body>
 </html>
@@ -426,12 +461,16 @@ def build_reports(
     config = ENVIRONMENT_CONFIG.get(environment.upper(), ENVIRONMENT_CONFIG["LLE"])
     reboot_inventory_filename = f"{environment}_to_reboot.ini"
     reboot_inventory_content = build_reboot_inventory(rows)
+    issues_csv_filename = f"{environment}_issues.csv"
+    issues_csv_content = build_issues_csv(issues)
     html_report = build_html_report(
         rows,
         issues,
         title=config["title"],
         reboot_inventory_filename=reboot_inventory_filename,
         reboot_inventory_content=reboot_inventory_content,
+        issues_csv_filename=issues_csv_filename,
+        issues_csv_content=issues_csv_content,
     )
     timestamp = datetime.now().strftime("%Y%m%d")
     stem = Path(config["output_name"]).stem

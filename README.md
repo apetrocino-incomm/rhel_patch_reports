@@ -11,7 +11,8 @@ This directory contains a self-contained report generator for LLE patch reportin
 - Builds a professional HTML report with:
   - a clear header
   - a primary patch-status table
-  - a secondary issues table for hosts that could not be assessed
+  - sortable primary and secondary issues tables
+  - downloadable reboot inventory and issues CSV exports
 - Runs entirely from this working directory and does not change anything outside it.
 
 ## Files
@@ -54,6 +55,7 @@ python3 report_generator.py --output-dir output --environment LLE --max-hosts 5
 
 - The generator reads Ansible inventory files only from `/git_incomm/incomm_git_inventory`.
 - The copied host files in `/inventory` remain the comparison source for patching details.
+- Each report includes an `{ENVIRONMENT}_issues.csv` download containing Hostname, IP Address, Issue, and Source columns.
 - Hosts present in Ansible inventory but missing from `/inventory` are listed in the issues table for review, such as possible decommissioned machines.
 - It does not modify scripts or files outside this directory.
 - The HTML report is intended for management presentation and can be shared as-is.
