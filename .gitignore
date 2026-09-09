@@ -5,3 +5,6 @@ __pycache__/
 # Optional
 *.pyo
 *.pyd
+
+# Output dir
+# output/
